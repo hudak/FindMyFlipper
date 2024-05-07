@@ -8,6 +8,7 @@ import hashlib
 import hmac
 import base64
 import locale
+from os import environ
 from datetime import datetime
 import srp._pysrp as srp
 from cryptography.hazmat.primitives import padding
@@ -187,8 +188,9 @@ def generate_anisette_headers():
         a = {"X-Apple-I-MD": base64.b64encode(bytes(otp.one_time_password)).decode(),
              "X-Apple-I-MD-M": base64.b64encode(bytes(otp.machine_identifier)).decode()}
     except ImportError:
-        print(f'pyprovision is not installed, querying {ANISETTE_URL} for an anisette server')
-        h = json.loads(requests.get(ANISETTE_URL, timeout=5).text)
+        server = environ.get("ANISETTE", ANISETTE_URL)
+        print(f'pyprovision is not installed, querying {server} for an anisette server')
+        h = json.loads(requests.get(server, timeout=5).text)
         a = {"X-Apple-I-MD": h["X-Apple-I-MD"], "X-Apple-I-MD-M": h["X-Apple-I-MD-M"]}
     a.update(generate_meta_headers(user_id=USER_ID, device_id=DEVICE_ID))
     return a
